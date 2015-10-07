@@ -271,8 +271,8 @@ module Octopus
         send_queries_to_selected_slave(method, *args, &block)
       else
         # select_connection.send(method, *args, &block)
-        if args[0] =~ /^\s*select /i
-          @shards[:slave1].connection.send(method, *args, &block)
+        if args[0] =~ /^\s*select /i && @shards.size > 1
+          (@shards.select {|k,v| k != "master" }.values.sample).connection.send(method, *args, &block)
         else
           @shards[:master].connection.send(method, *args, &block)
         end
