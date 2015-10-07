@@ -271,7 +271,8 @@ module Octopus
         send_queries_to_selected_slave(method, *args, &block)
       else
         # select_connection.send(method, *args, &block)
-        if args[0] =~ /^\s*select /i && @shards.size > 1
+        sql = args[0].class == String ? args[0].gsub(/^\s*WITH(\s+RECURSIVE)?\s+\w+\s*(\(.+?\))?\s+AS\s+\(.+?\)\s*/im, '') : nil
+        if sql && sql =~ /^\s*select /i && @shards.size > 1
           (@shards.select {|k,v| k != "master" }.values.sample).connection.send(method, *args, &block)
         else
           @shards[:master].connection.send(method, *args, &block)
